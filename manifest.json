@@ -1,0 +1,7 @@
+{
+    "name": "ReStack_ComponentLibrary",
+    "codeowners": ["@bramvandenbossche" ],
+    "documentation": "https://www.to.do",
+    "version": "0.0.1",
+    "type": "shell"
+}

@@ -1,0 +1,31 @@
+{
+    "name": "Restore",
+    "file": "restore.sh",
+    "type": "shell",
+    "parameters":[
+        {
+            "name": "VM container id",
+            "datatype": "number"
+        },
+        {
+            "name": "PBS Storage",
+            "datatype": "text"
+        },
+        {
+            "name": "Target Storage",
+            "datatype": "text"
+        },
+        {
+            "name": "Proxmox host",
+            "datatype": "text"
+        },
+        {
+            "name": "User",
+            "datatype": "text"
+        },
+        {
+            "name": "SSH key",
+            "datatype": "text"
+        }
+    ]
+}

@@ -1,0 +1,27 @@
+{
+    "name": "Update Cluster",
+    "file": "update.sh",
+    "type": "shell",
+    "parameters":[
+        {
+            "name": "Kube node list",
+            "datatype": "text"
+        },
+        {
+            "name": "Kube node IP list",
+            "datatype": "text"
+        },
+        {
+            "name": "Kubeconfig location",
+            "datatype": "text"
+        },
+        {
+            "name": "User",
+            "datatype": "text"
+        },
+        {
+            "name": "SSH key",
+            "datatype": "text"
+        }
+    ]
+}

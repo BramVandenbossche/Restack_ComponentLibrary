@@ -39,7 +39,6 @@ end_script(){
 
     for ((i=0; i<${#messages[@]}; i++)); do
         echo "${messages[i]}"
-        echo ","
     done
 
     exit $status

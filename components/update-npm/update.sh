@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 # Parameters
 VM_CT_ID="$1"
@@ -13,7 +13,7 @@ messages=()
 echo_message() {
   local message="$1"
   local error="$2"
-  local componentname="update-npm"
+  local componentname="update-nginx-proxymanager"
   local timestamp=$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")
 
   echo '{"timestamp": "'"$timestamp"'","componentName": "'"$componentname"'","message": "'"$message"'","error": '$error'}'
@@ -22,8 +22,9 @@ echo_message() {
 end_script() {
   local status="$1"
 
-  for ((i = 0; i < ${#messages[@]}; i++)); do
+  for ((i=0; i<${#messages[@]}; i++)); do
     echo "${messages[i]}"
+    echo ","
   done
 
   exit $status
@@ -43,75 +44,35 @@ execute_command_on_container() {
   fi
 }
 
-find_on_container() {
-  local command="$1"
-  local output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "pct exec $VM_CT_ID -- bash -c '$command' 2>&1")
-  local exit_status=$?
-
-  if [[ $exit_status -ne 0 ]]; then
-    messages+=("$(echo_message "Error executing command on container ($exit_status): $command" true)")
-    end_script 1
-  fi
-
-  echo "$output"
-}
-
 update() {
-  local RELEASE=$(curl -s https://api.github.com/repos/NginxProxyManager/nginx-proxy-manager/releases/latest |
-  grep "tag_name" |
-  awk '{print substr($2, 3, length($2)-4) }')
-
-  check_output=$(execute_command_on_container "[ -f /lib/systemd/system/npm.service ] && echo 'Installed' || echo 'NotInstalled'")
+  check_output=$(execute_command_on_container "[ -d -d /opt/nginx-proxy-manager ] && echo 'Installed' || echo 'NotInstalled'")
   if [[ $check_output == "NotInstalled" ]]; then
-    messages+=("$(echo_message "No Nginx Proxy Manager Installation Found!" true)")
+    messages+=("$(echo_message "Nginx Proxy Manager is not installed!" true)")
     end_script 1
   fi
 
-  messages+=("$(echo_message "Stopping Services" false)")
-  execute_command_on_container "systemctl stop openresty"
+  local RELEASE=$(curl -s https://api.github.com/repos/nginx-proxy-manager/nginx-proxy-manager/releases/latest |
+    grep "tag_name" |
+    awk '{print substr($2, 3, length($2)-4) }')
+
+  messages+=("$(echo_message "Stopping Nginx Proxy Manager" false)")
   execute_command_on_container "systemctl stop npm"
-  messages+=("$(echo_message "Stopped Services" false)")
+  messages+=("$(echo_message "Nginx Proxy Manager Stopped" false)")
 
-  messages+=("$(echo_message "Cleaning Old Files" false)")
-  execute_command_on_container "rm -rf /app /var/www/html /etc/nginx /var/log/nginx /var/lib/nginx /var/cache/nginx"
-  messages+=("$(echo_message "Cleaned Old Files" false)")
+  messages+=("$(echo_message "Downloading Nginx Proxy Manager version $RELEASE" false)")
+  execute_command_on_container "wget -q https://codeload.github.com/nginx-proxy-manager/nginx-proxy-manager/tar.gz/$RELEASE -O - | tar -xz &>/dev/null"
+  messages+=("$(echo_message "Downloaded Nginx Proxy Manager version $RELEASE" false)")
 
-  messages+=("$(echo_message "Downloading NPM" false)")
-  execute_command_on_container "wget -q https://codeload.github.com/NginxProxyManager/nginx-proxy-manager/tar.gz/v${RELEASE} -O - | tar -xz &>/dev/null"
-  messages+=("$(echo_message "Downloaded NPM" false)")
+  messages+=("$(echo_message "Updating Nginx Proxy Manager to version $RELEASE" false)")
+  execute_command_on_container "mv nginx-proxy-manager-$RELEASE /opt/nginx-proxy-manager"
+  execute_command_on_container "cd /opt/nginx-proxy-manager && npm ci --only=prod --no-audit &>/dev/null"
+  messages+=("$(echo_message "Updated Nginx Proxy Manager to version $RELEASE" false)")
 
-  messages+=("$(echo_message "Setting up Environment" false)")
-  execute_command_on_container "ln -sf /usr/bin/python3 /usr/bin/python"
-  execute_command_on_container "ln -sf /usr/bin/certbot /opt/certbot/bin/certbot"
-  execute_command_on_container "ln -sf /usr/local/openresty/nginx/sbin/nginx /usr/sbin/nginx"
-  execute_command_on_container "ln -sf /usr/local/openresty/nginx/ /etc/nginx"
-  execute_command_on_container "sed -i 's+0.0.0+${RELEASE}+g' nginx-proxy-manager-${RELEASE}/backend/package.json"
-  execute_command_on_container "sed -i 's+0.0.0+${RELEASE}+g' nginx-proxy-manager-${RELEASE}/frontend/package.json"
-  execute_command_on_container "sed -i 's+^daemon+#daemon+g' nginx-proxy-manager-${RELEASE}/docker/rootfs/etc/nginx/nginx.conf"
-  find_on_container 'find "$(pwd)" -type f -name "*.conf" -exec sed -i "s+include conf.d+include /etc/nginx/conf.d+g" {} +'
-  execute_command_on_container "mkdir -p /var/www/html /etc/nginx/logs"
-  execute_command_on_container "cp -r nginx-proxy-manager-${RELEASE}/docker/rootfs/var/www/html/* /var/www/html/"
-  execute_command_on_container "cp -r nginx-proxy-manager-${RELEASE}/docker/rootfs/etc/nginx/* /etc/nginx/"
-  execute_command_on_container "cp nginx-proxy-manager-${RELEASE}/docker/rootfs/etc/letsencrypt.ini /etc/letsencrypt.ini"
-  execute_command_on_container "cp nginx-proxy-manager-${RELEASE}/docker/rootfs/etc/logrotate.d/nginx-proxy-manager /etc/logrotate.d/nginx-proxy-manager"
-  execute_command_on_container "ln -sf /etc/nginx/nginx.conf /etc/nginx/conf/nginx.conf"
-  execute_command_on_container "rm -f /etc/nginx/conf.d/dev.conf"
-  execute_command_on_container "mkdir -p /tmp/nginx/body /run/nginx /data/nginx /data/custom_ssl /data/logs /data/access /data/nginx/default_host /data/nginx/default_www /data/nginx/proxy_host /data/nginx/redirection_host /data/nginx/stream /data/nginx/dead_host /data/nginx/temp /var/lib/nginx/cache/public /var/lib/nginx/cache/private /var/cache/nginx/proxy_temp"
-  execute_command_on_container "chmod -R 777 /var/cache/nginx"
-  execute_command_on_container "chown root /tmp/nginx"
-  messages+=("$(echo_message "Environment Set up" false)")
+  messages+=("$(echo_message "Starting Nginx Proxy Manager" false)")
+  execute_command_on_container "systemctl start npm"
+  messages+=("$(echo_message "Nginx Proxy Manager Started" false)")
 
-  messages+=("$(echo_message "Starting Services" false)")
-  execute_command_on_container "sed -i -e 's/user npm/user root/g' -e 's/^pid/#pid/g' /usr/local/openresty/nginx/conf/nginx.conf"
-  execute_command_on_container "sed -i 's/include-system-site-packages = false/include-system-site-packages = true/g' /opt/certbot/pyvenv.cfg"
-  execute_command_on_container "systemctl enable -q --now openresty"
-  execute_command_on_container "systemctl enable -q --now npm"
-  messages+=("$(echo_message "Started Services" false)")
-
-  messages+=("$(echo_message "Cleaning up" false)")
-  execute_command_on_container "rm -rf ~/nginx-proxy-manager-*"
-  messages+=("$(echo_message "Cleaned" false)")
-  messages+=("$(echo_message "Updated Successfully" false)")
+  messages+=("$(echo_message "Update Completed Successfully" false)")
 }
 
 # Run

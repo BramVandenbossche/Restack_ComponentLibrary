@@ -1,11 +1,15 @@
 #!/bin/bash
 
 # Parameters
-KUBE_NODE_LIST=("$1")
-KUBE_NODE_IP_LIST=("$2")
+# Parameters
+NODE_LIST="$1"
+IP_LIST="$2"
 KUBECONFIG="$3"
 USER="$4"
 SSH_PRIVATE_KEY="${5:-id_rsa}"
+
+IFS=', ' read -r -a KUBE_NODE_LIST <<< "$NODE_LIST"
+IFS=', ' read -r -a KUBE_NODE_IP_LIST <<< "$IP_LIST"
 
 # Vars
 messages=()
@@ -33,7 +37,7 @@ end_script() {
 drain_node() {
   local node="$1"
   messages+=("$(echo_message "Draining node: $node" false)")
-  drain_output=$(KUBECONFIG="$KUBECONFIG" kubectl drain "$node" --ignore-daemonsets --delete-local-data --force --grace-period=60 2>&1)
+  drain_output=$(KUBECONFIG="$KUBECONFIG" kubectl drain "$node" --ignore-daemonsets --delete-emptydir-data --force --grace-period=60 2>&1)
   local exit_status=$?
   if [[ $exit_status -ne 0 ]]; then
     messages+=("$(echo_message "Failed to drain node: $node" true)")

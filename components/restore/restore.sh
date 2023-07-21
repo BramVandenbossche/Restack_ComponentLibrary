@@ -83,6 +83,9 @@ else
     messages+=("$(echo_message "Restoring $backup_entry" false)")
 fi
 
+messages+=("$(echo_message "$RESTORE_CMD" "$VM_CT_ID" "$BACKUP_ENTRY" "--storage" "$TARGET_STORAGE" "--force" false)")
+fi
+
 restore_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" ""$RESTORE_CMD" "$VM_CT_ID" "$BACKUP_ENTRY" "--storage" "$TARGET_STORAGE" "--force" 2>&1 ")
 exit_status=$?
 if [[ $exit_status -ne 0 ]]; then

@@ -17,13 +17,7 @@ echo_message() {
   local componentname="kubernetes-update"
   local timestamp=$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")
 
-  echo '{
-      "timestamp": "'"$timestamp"'",
-      "componentName": "'"$componentname"'",
-      "message": "'"$message"'",
-      "error": '$error'
-  }'
-}
+  echo '{"timestamp": "'"$timestamp"'","componentName": "'"$componentname"'","message": "'"$message"'","error": '$error'}'
 
 end_script() {
   local status="$1"

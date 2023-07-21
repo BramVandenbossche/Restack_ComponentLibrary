@@ -15,12 +15,7 @@ echo_message() {
   local componentname="update-debian"
   local timestamp=$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")
 
-  echo '{
-      "timestamp": "'"$timestamp"'",
-      "componentName": "'"$componentname"'",
-      "message": "'"$message"'",
-      "error": '$error'
-  }'
+  echo '{"timestamp": "'"$timestamp"'","componentName": "'"$componentname"'","message": "'"$message"'","error": '$error'}'
 }
 
 end_script() {

@@ -79,11 +79,11 @@ update_node() {
 for i in "${!KUBE_NODE_LIST[@]}"; do
   node="${KUBE_NODE_LIST[$i]}"
   ip="${KUBE_NODE_IP_LIST[$i]}"
-  drain_node "$node"
-  sleep 10
-  update_node "$ip"
+  # drain_node "$node"
+  # sleep 10
+  # update_node "$ip"
   uncordon_node "$node"
-  sleep 30
+  # sleep 30
 done
 messages+=("$(echo_message "All nodes updated!" false)")
 end_script 0

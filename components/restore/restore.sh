@@ -61,11 +61,12 @@ if [[ -z $PROXMOX_HOST ]]; then
 fi
 
 stopctvm_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "$STOP_CMD" "$VM_CT_ID" 2>&1)
-if [[ $stopctvm_output =~ "error" ]]; then
-    messages+=("$(echo_message -e  "Failed to stop the container/VM. Error: $stopctvm_output" true)")
+exit_status=$?
+if [[ $exit_status -ne 0 ]]; then
+    messages+=("$(echo_message  "Failed to stop the container/VM. Error: $stopctvm_output" true)")
     end_script 1
 else
-    messages+=("$(echo_message -e  "Container/VM stopped successfully." false)")
+    messages+=("$(echo_message  "Container/VM stopped successfully." false)")
 fi
 
 # # Wait until the container/VM is turned off
@@ -74,13 +75,17 @@ fi
 # done
 
 backup_entry=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "pvesm list \"$PBS_STORAGE\" --vmid \"$VM_CT_ID\"" | tail -n 1 | cut -d ' ' -f 1)
-if echo "$backup_entry" | grep -iq "error"; then
-    messages+=("$(echo_message -e "No available backups found." true)")
+exit_status=$?
+if [[ $exit_status -ne 0 ]]; then
+    messages+=("$(echo_message "No backup found ($exit_status): $command" true)")
     end_script 1
+else
+    messages+=("$(echo_message "Restoring $backup_entry" false)")
 fi
 
 restore_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "$RESTORE_CMD" "$VM_CT_ID" "$BACKUP_ENTRY" "--storage" "$TARGET_STORAGE" "--force" 2>&1 )
-if echo "$restore_output" | grep -iq "error"; then
+exit_status=$?
+if [[ $exit_status -ne 0 ]]; then
     messages+=("$(echo_message -e  "Failed to restore container/VM. Error: $restore_output" true)")
     end_script 1
 else
@@ -88,11 +93,12 @@ else
 fi
 
 startctvm_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "$START_CMD" "$VM_CT_ID" 2>&1 )
-if echo "$startctvm_output" | grep -iq "error"; then
-    messages+=("$(echo_message -e  "Failed to started container/VM. Error: $startctvm_output" true)")
+exit_status=$?
+if [[ $exit_status -ne 0 ]]; then
+    messages+=("$(echo_message "Failed to started container/VM. Error: $startctvm_output" true)")
     end_script 1
 else
-    messages+=("$(echo_message -e  "Container/VM started successfully." false)")
-    end_script 0
+    messages+=("$(echo_message "Container/VM started successfully." false)")
 fi
 
+end_script 0

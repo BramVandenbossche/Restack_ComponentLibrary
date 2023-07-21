@@ -60,11 +60,6 @@ if [[ -z $PROXMOX_HOST ]]; then
     end_script 1
 fi
 
-# # Wait until the container/VM is turned off
-# while ssh -i "$SSH_PRIVATE_KEY" root@"$PROXMOX_HOST" "pvesh get /nodes/$PROXMOX_HOST/$([ $VM_CT_ID =~ ^q ] && echo \"qemu\" || echo \"lxc\")/$VM_CT_ID/status" | grep -q '\"status\":\"stopped\"'""; do
-#     sleep 1
-# done
-
 backup_entry=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "pvesm list \"$PBS_STORAGE\" --vmid \"$VM_CT_ID\"" | tail -n 1 | cut -d ' ' -f 1)
 exit_status=$?
 if [[ $exit_status -ne 0 ]]; then
@@ -85,8 +80,6 @@ if [[ $vmct_status != "status: stopped" ]]; then
         messages+=("$(echo_message "Container/VM stopped successfully." false)")
     fi
 fi
-
-messages+=("$(echo_message "$RESTORE_CMD $VM_CT_ID $backup_entry --storage $TARGET_STORAGE --force" false)")
 
 restore_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "$RESTORE_CMD $VM_CT_ID $backup_entry --storage $TARGET_STORAGE --force 2>&1")
 exit_status=$?

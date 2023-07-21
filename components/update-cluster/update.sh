@@ -64,7 +64,7 @@ uncordon_node() {
 update_node() {
   local node="$1"
   messages+=("$(echo_message "Updating node: $node" false)")
-  update_output=$(ssh -i "$SSH_PRIVATE_KEY" "$USER"@"$node" "dnf update -y" 2>&1)
+  update_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$node" "dnf update -y" 2>&1)
   local exit_status=$?
   if [[ $exit_status -ne 0 ]]; then
       messages+=("$(echo_message "Node update failed. Error: $update_output" true)")

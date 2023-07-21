@@ -74,9 +74,9 @@ else
     messages+=("$(echo_message "Restoring $backup_entry" false)")
 fi
 
-vmct_status=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "pct status \"$VM_CT_ID\" 2>&1")
+vmct_status=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "pct status $VM_CT_ID 2>&1")
 if [[ $vmct_status != "status: stopped" ]]; then
-    stopctvm_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "$STOP_CMD" "$VM_CT_ID" 2>&1)
+    stopctvm_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "$STOP_CMD $VM_CT_ID 2>&1")
     exit_status=$?
     if [[ $exit_status -ne 0 ]]; then
         messages+=("$(echo_message "Failed to stop the container/VM. Error: $stopctvm_output" true)")
@@ -86,7 +86,7 @@ if [[ $vmct_status != "status: stopped" ]]; then
     fi
 fi
 
-restore_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "$RESTORE_CMD" "$VM_CT_ID" "$BACKUP_ENTRY" "--storage \"$TARGET_STORAGE\ --force 2>&1")
+restore_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "$RESTORE_CMD $VM_CT_ID $BACKUP_ENTRY --storage $TARGET_STORAGE --force 2>&1")
 exit_status=$?
 if [[ $exit_status -ne 0 ]]; then
     messages+=("$(echo_message "Failed to restore container/VM. Error: $restore_output" true)")
@@ -95,7 +95,7 @@ else
     messages+=("$(echo_message "Container/VM restored successfully." false)")
 fi
 
-startctvm_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "$START_CMD" "$VM_CT_ID" 2>&1)
+startctvm_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "$START_CMD $VM_CT_ID 2>&1")
 exit_status=$?
 if [[ $exit_status -ne 0 ]]; then
     messages+=("$(echo_message "Failed to started container/VM. Error: $startctvm_output" true)")

@@ -76,7 +76,7 @@ fi
 
 vmctstatus=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "pct status \"$VM_CT_ID\" 2>&1")
 if [$vmctstatus != "status: stopped"]; then
-    stopctvm_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "$STOP_CMD" "$VM_CT_ID" 2>&1)
+    stopctvm_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "\"$STOP_CMD\" \"$VM_CT_ID\" 2>&1")
     exit_status=$?
     if [[ $exit_status -ne 0 ]]; then
         messages+=("$(echo_message "Failed to stop the container/VM. Error: $stopctvm_output" true)")

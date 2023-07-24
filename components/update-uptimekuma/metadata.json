@@ -1,5 +1,5 @@
 {
-    "name": "Update uptimekuma",
+    "name": "Update UptimeKuma",
     "file": "update.sh",
     "type": "shell",
     "parameters":[

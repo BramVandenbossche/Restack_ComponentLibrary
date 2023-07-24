@@ -44,8 +44,9 @@ execute_command_on_container() {
 }
 
 update() {
-  if [[ ! -d /opt/uptime-kuma ]]; then
-    messages+=("$(echo_message "No Kuma Installation Found!" true)")
+  check_output=$(execute_command_on_container "[ -d /opt/uptime-kuma ] && echo 'Installed' || echo 'NotInstalled'")
+  if [[ $check_output == "NotInstalled" ]]; then
+    messages+=("$(echo_message "No UptimeKuma Installation Found!" true)")
     end_script 1
   fi
 

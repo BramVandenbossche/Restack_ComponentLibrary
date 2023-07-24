@@ -81,7 +81,7 @@ update() {
   execute_command_on_container "sudo sed -i 's+^daemon+#daemon+g' /root/nginx-proxy-manager-${RELEASE}/docker/rootfs/etc/nginx/nginx.conf"
   NGINX_CONFS=$(execute_command_on_container "find '/root/nginx-proxy-manager-${RELEASE}' -type f -name '*.conf' 2>&1")
   for NGINX_CONF in $NGINX_CONFS; do
-    execute_command_on_container "sudo sed -i 's+include conf.d+include /etc/nginx/conf.d+g' \"$NGINX_CONF\""
+    execute_command_on_container "sudo sed -i 's+include conf.d+include /etc/nginx/conf.d+g' "$NGINX_CONF""
   done
   execute_command_on_container "sudo mkdir -p /var/www/html /etc/nginx/logs"
   execute_command_on_container "sudo cp -r /root/nginx-proxy-manager-${RELEASE}/docker/rootfs/var/www/html/* /var/www/html/"

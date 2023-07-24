@@ -1,5 +1,5 @@
 {
-    "name": "Update Adguard",
+    "name": "Update Cloudpanel",
     "file": "update.sh",
     "type": "shell",
     "parameters":[

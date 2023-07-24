@@ -82,6 +82,7 @@ for i in "${!KUBE_NODE_LIST[@]}"; do
   drain_node "$node"
   sleep 10
   update_node "$ip"
+  sleep 10
   uncordon_node "$node"
   sleep 10
 done

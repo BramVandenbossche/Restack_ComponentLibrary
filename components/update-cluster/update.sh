@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # Parameters
-# Parameters
 NODE_LIST="$1"
 IP_LIST="$2"
 KUBECONFIG="$3"

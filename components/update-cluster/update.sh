@@ -5,7 +5,8 @@ NODE_LIST="$1"
 IP_LIST="$2"
 KUBECONFIG="$3"
 USER="$4"
-SSH_PRIVATE_KEY="${5:-id_rsa}"
+UPDATE_COMMAND="$5"
+SSH_PRIVATE_KEY="${6:-id_rsa}"
 
 IFS=', ' read -r -a KUBE_NODE_LIST <<< "$NODE_LIST"
 IFS=', ' read -r -a KUBE_NODE_IP_LIST <<< "$IP_LIST"
@@ -63,7 +64,7 @@ uncordon_node() {
 update_node() {
   local node="$1"
   messages+=("$(echo_message "Updating node: $node" false)")
-  update_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$node" "dnf update -y" 2>&1)
+  update_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$node" "$UPDATE_COMMAND" 2>&1)
   local exit_status=$?
   if [[ $exit_status -ne 0 ]]; then
       messages+=("$(echo_message "Node update failed. Error: $update_output" true)")

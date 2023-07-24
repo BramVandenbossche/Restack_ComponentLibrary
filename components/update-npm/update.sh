@@ -50,9 +50,7 @@ update() {
     end_script 1
   fi
 
-  RELEASE=$(execute_command_on_container 'curl -s https://api.github.com/repos/NginxProxyManager/nginx-proxy-manager/releases/latest |
-    grep "tag_name" |
-    awk "{print substr(\$2, 3, length(\$2)-4)}"')
+  RELEASE=$(execute_command_on_container 'curl -s https://api.github.com/repos/NginxProxyManager/nginx-proxy-manager/releases/latest | grep "tag_name" | awk "{print substr(\$2, 3, length(\$2)-4)}"')
 
   messages+=("$(echo_message "Stopping Services" false)")
   execute_command_on_container "sudo systemctl stop openresty"

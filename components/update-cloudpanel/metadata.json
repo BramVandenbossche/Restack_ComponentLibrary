@@ -1,0 +1,23 @@
+{
+    "name": "Update Cloudpanel",
+    "file": "update.sh",
+    "type": "shell",
+    "parameters":[
+        {
+            "name": "VM container id",
+            "datatype": "number"
+        },
+        {
+            "name": "Proxmox host",
+            "datatype": "text"
+        },
+        {
+            "name": "User",
+            "datatype": "text"
+        },
+        {
+            "name": "SSH key",
+            "datatype": "text"
+        }
+    ]
+}

@@ -55,24 +55,20 @@ update() {
   execute_command_on_container "sudo systemctl stop uptime-kuma &>/dev/null"
   messages+=("$(echo_message "Stopped Kuma" false)")
 
-  execute_command_on_container "cd /opt/uptime-kuma"
-
-  messages+=("$(echo_message "Pulling Kuma ${LATEST}" false)")
-  execute_command_on_container "git fetch --all &>/dev/null"
-  execute_command_on_container "git checkout $LATEST --force &>/dev/null"
+  execute_command_on_container "cd /opt/uptime-kuma && \ git fetch --all &>/dev/null && \ git checkout $LATEST --force &>/dev/null"
+  
   messages+=("$(echo_message "Pulled ${LATEST}" false)")
 
   messages+=("$(echo_message "Updating Kuma to ${LATEST}" false)")
-  execute_command_on_container "npm install --production &>/dev/null"
-  execute_command_on_container "npm run download-dist &>/dev/null"
+  execute_command_on_container "cd /opt/uptime-kuma && \ npm install --production &>/dev/null && \ npm run download-dist &>/dev/null"
   messages+=("$(echo_message "Updated" false)")
 
   messages+=("$(echo_message "Starting Kuma" false)")
   execute_command_on_container "sudo systemctl start uptime-kuma &>/dev/null"
   messages+=("$(echo_message "Started" false)")
   messages+=("$(echo_message "Updated Successfully" false)")
-
 }
+
 
 ## Run
 update

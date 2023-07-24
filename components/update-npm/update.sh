@@ -44,7 +44,7 @@ execute_command_on_container() {
 }
 
 update() {
-  check_output=$(execute_command_on_container "[ -d /opt/nginx-proxy-manager ] && echo 'Installed' || echo 'NotInstalled'")
+  check_output=$(execute_command_on_container "[ -d /etc/nginx ] && echo 'Installed' || echo 'NotInstalled'")
   if [[ $check_output == "NotInstalled" ]]; then
     messages+=("$(echo_message "No Nginx Proxy Manager Installation Found!" true)")
     end_script 1
@@ -57,7 +57,7 @@ update() {
   messages+=("$(echo_message "Stopping Services" false)")
   execute_command_on_container "sudo systemctl stop openresty"
   execute_command_on_container "sudo systemctl stop npm"
-  messages+=("$(echo_message "Stopped Services" trufalsee)")
+  messages+=("$(echo_message "Stopped Services" true)")
 
   messages+=("$(echo_message "Cleaning Old Files" false)")
   execute_command_on_container "sudo rm -rf /app \
@@ -66,30 +66,30 @@ update() {
     /var/log/nginx \
     /var/lib/nginx \
     /var/cache/nginx"
-  messages+=("$(echo_message "Cleaned Old Files" false)")
+  messages+=("$(echo_message "Cleaned Old Files" true)")
 
   messages+=("$(echo_message "Downloading NPM v${RELEASE}" false)")
   execute_command_on_container "wget -q https://codeload.github.com/NginxProxyManager/nginx-proxy-manager/tar.gz/v${RELEASE} -O - | tar -xz"
   execute_command_on_container "cd nginx-proxy-manager-${RELEASE}"
-  messages+=("$(echo_message "Downloaded NPM v${RELEASE}" false)")
+  messages+=("$(echo_message "Downloaded NPM v${RELEASE}" true)")
 
   messages+=("$(echo_message "Setting up Environment" false)")
   execute_command_on_container "sudo ln -sf /usr/bin/python3 /usr/bin/python"
   execute_command_on_container "sudo ln -sf /usr/bin/certbot /opt/certbot/bin/certbot"
   execute_command_on_container "sudo ln -sf /usr/local/openresty/nginx/sbin/nginx /usr/sbin/nginx"
   execute_command_on_container "sudo ln -sf /usr/local/openresty/nginx/ /etc/nginx"
-  execute_command_on_container "sudo sed -i 's+0.0.0+${RELEASE}+g' backend/package.json"
-  execute_command_on_container "sudo sed -i 's+0.0.0+${RELEASE}+g' frontend/package.json"
-  execute_command_on_container "sudo sed -i 's+^daemon+#daemon+g' docker/rootfs/etc/nginx/nginx.conf"
-  NGINX_CONFS=$(execute_command_on_container 'find "$(pwd)" -type f -name "*.conf"')
+  execute_command_on_container "sudo sed -i 's+0.0.0+${RELEASE}+g' /root/nginx-proxy-manager/backend/package.json"
+  execute_command_on_container "sudo sed -i 's+0.0.0+${RELEASE}+g' /root/nginx-proxy-manager/frontend/package.json"
+  execute_command_on_container "sudo sed -i 's+^daemon+#daemon+g' /root/nginx-proxy-manager/docker/rootfs/etc/nginx/nginx.conf"
+  NGINX_CONFS=$(execute_command_on_container 'find "/root/nginx-proxy-manager/" -type f -name "*.conf"')
   for NGINX_CONF in $NGINX_CONFS; do
     execute_command_on_container "sudo sed -i 's+include conf.d+include /etc/nginx/conf.d+g' \"$NGINX_CONF\""
   done
   execute_command_on_container "sudo mkdir -p /var/www/html /etc/nginx/logs"
-  execute_command_on_container "sudo cp -r docker/rootfs/var/www/html/* /var/www/html/"
-  execute_command_on_container "sudo cp -r docker/rootfs/etc/nginx/* /etc/nginx/"
-  execute_command_on_container "sudo cp docker/rootfs/etc/letsencrypt.ini /etc/letsencrypt.ini"
-  execute_command_on_container "sudo cp docker/rootfs/etc/logrotate.d/nginx-proxy-manager /etc/logrotate.d/nginx-proxy-manager"
+  execute_command_on_container "sudo cp -r /root/nginx-proxy-manager/docker/rootfs/var/www/html/* /var/www/html/"
+  execute_command_on_container "sudo cp -r /root/nginx-proxy-manager/docker/rootfs/etc/nginx/* /etc/nginx/"
+  execute_command_on_container "sudo cp /root/nginx-proxy-manager/docker/rootfs/etc/letsencrypt.ini /etc/letsencrypt.ini"
+  execute_command_on_container "sudo cp /root/nginx-proxy-manager/docker/rootfs/etc/logrotate.d/nginx-proxy-manager /etc/logrotate.d/nginx-proxy-manager"
   execute_command_on_container "sudo ln -sf /etc/nginx/nginx.conf /etc/nginx/conf/nginx.conf"
   execute_command_on_container "sudo rm -f /etc/nginx/conf.d/dev.conf"
   execute_command_on_container "sudo mkdir -p /tmp/nginx/body \
@@ -116,27 +116,27 @@ update() {
     openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -subj "/O=Nginx Proxy Manager/OU=Dummy Certificate/CN=localhost" -keyout /data/nginx/dummykey.pem -out /data/nginx/dummycert.pem &>/dev/null
   fi'
   execute_command_on_container "sudo mkdir -p /app/global /app/frontend/images"
-  execute_command_on_container "sudo cp -r backend/* /app"
-  execute_command_on_container "sudo cp -r global/* /app/global"
+  execute_command_on_container "sudo cp -r /root/nginx-proxy-manager/backend/* /app"
+  execute_command_on_container "sudo cp -r /root/nginx-proxy-manager/global/* /app/global"
   execute_command_on_container 'wget -q "https://github.com/just-containers/s6-overlay/releases/download/v3.1.5.0/s6-overlay-noarch.tar.xz"'
   execute_command_on_container 'wget -q "https://github.com/just-containers/s6-overlay/releases/download/v3.1.5.0/s6-overlay-x86_64.tar.xz"'
   execute_command_on_container 'sudo tar -C / -Jxpf s6-overlay-noarch.tar.xz'
   execute_command_on_container 'sudo tar -C / -Jxpf s6-overlay-x86_64.tar.xz'
   execute_command_on_container "sudo python3 -m pip install --no-cache-dir certbot-dns-cloudflare &>/dev/null"
-  messages+=("$(echo_message "Setup Environment" false)")
+  messages+=("$(echo_message "Setup Environment" true)")
 
   messages+=("$(echo_message "Building Frontend" false)")
   execute_command_on_container "cd ./frontend && \
     export NODE_ENV=development && \
     yarn install --network-timeout=30000 &>/dev/null && \
-    yarn build &>/dev/null && \
-    cp -r dist/* /app/frontend && \
-    cp -r app-images/* /app/frontend/images"
-  messages+=("$(echo_message "Built Frontend" false)")
+    yarn build &>/dev/null"
+  execute_command_on_container "sudo cp -r dist/* /app/frontend"
+  execute_command_on_container "sudo cp -r app-images/* /app/frontend/images"
+  messages+=("$(echo_message "Built Frontend" true)")
 
   messages+=("$(echo_message "Initializing Backend" false)")
   execute_command_on_container 'if [ ! -f /app/config/production.json ]; then
-    cat <<'"'"'EOF'"'"' >/app/config/production.json
+    cat <<EOF > /app/config/production.json
 {
   "database": {
     "engine": "knex-native",
@@ -153,18 +153,18 @@ EOF
   execute_command_on_container "cd /app && \
     export NODE_ENV=development && \
     yarn install --network-timeout=30000 &>/dev/null"
-  messages+=("$(echo_message "Initialized Backend" false)")
+  messages+=("$(echo_message "Initialized Backend" true)")
 
   messages+=("$(echo_message "Starting Services" false)")
   execute_command_on_container "sudo sed -i 's/user npm/user root/g; s/^pid/#pid/g' /usr/local/openresty/nginx/conf/nginx.conf"
   execute_command_on_container "sudo sed -i 's/include-system-site-packages = false/include-system-site-packages = true/g' /opt/certbot/pyvenv.cfg"
   execute_command_on_container "sudo systemctl enable -q --now openresty"
   execute_command_on_container "sudo systemctl enable -q --now npm"
-  messages+=("$(echo_message "Started Services" false)")
+  messages+=("$(echo_message "Started Services" true)")
 
   messages+=("$(echo_message "Cleaning up" false)")
   execute_command_on_container "sudo rm -rf ~/nginx-proxy-manager-* s6-overlay-noarch.tar.xz s6-overlay-x86_64.tar.xz"
-  messages+=("$(echo_message "Cleaned" false)")
+  messages+=("$(echo_message "Cleaned" true)")
 
   messages+=("$(echo_message "Updated Successfully" false)")
 }

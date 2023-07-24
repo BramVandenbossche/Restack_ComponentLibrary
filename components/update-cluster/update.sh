@@ -71,7 +71,6 @@ update_node() {
       end_script 1
   else
       messages+=("$(echo_message "Node updated: $node" false)")
-      end_script 0
   fi
 }
 

@@ -76,10 +76,10 @@ update() {
   execute_command_on_container "sudo ln -sf /usr/bin/certbot /opt/certbot/bin/certbot"
   execute_command_on_container "sudo ln -sf /usr/local/openresty/nginx/sbin/nginx /usr/sbin/nginx"
   execute_command_on_container "sudo ln -sf /usr/local/openresty/nginx/ /etc/nginx"
-  execute_command_on_container "sudo sed -i 's+0.0.0+${RELEASE}+g' /root/nginx-proxy-manager/backend/package.json"
-  execute_command_on_container "sudo sed -i 's+0.0.0+${RELEASE}+g' /root/nginx-proxy-manager/frontend/package.json"
-  execute_command_on_container "sudo sed -i 's+^daemon+#daemon+g' /root/nginx-proxy-manager/docker/rootfs/etc/nginx/nginx.conf"
-  NGINX_CONFS=$(execute_command_on_container 'find "/root/nginx-proxy-manager/" -type f -name "*.conf"')
+  execute_command_on_container "sudo sed -i 's+0.0.0+${RELEASE}+g' /root/nginx-proxy-manager-${RELEASE}/backend/package.json"
+  execute_command_on_container "sudo sed -i 's+0.0.0+${RELEASE}+g' /root/nginx-proxy-manager-${RELEASE}/frontend/package.json"
+  execute_command_on_container "sudo sed -i 's+^daemon+#daemon+g' /root/nginx-proxy-manager-${RELEASE}/docker/rootfs/etc/nginx/nginx.conf"
+  NGINX_CONFS=$(execute_command_on_container "find '/root/nginx-proxy-manager-${RELEASE}' -type f -name '*.conf'")
   for NGINX_CONF in $NGINX_CONFS; do
     execute_command_on_container "sudo sed -i 's+include conf.d+include /etc/nginx/conf.d+g' \"$NGINX_CONF\""
   done

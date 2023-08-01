@@ -32,7 +32,7 @@ end_script() {
 execute_command_on_container() {
   local command="$1"
 
-  pct_exec_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "pct exec $VM_CT_ID -- bash -c '$command' 2>&1")
+  pct_exec_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "pct exec $VM_CT_ID -- bash -c '$command' 2>&1 | sed 's,\x1B\[[0-9;]*[a-zA-Z],,g'")
   local exit_status=$?
 
   if [[ $exit_status -ne 0 ]]; then

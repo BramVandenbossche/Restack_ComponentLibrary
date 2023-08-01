@@ -52,7 +52,7 @@ execute_command_on_machine() {
 
 update() {
   messages+=("$(echo_message "Updating Docker Compose" false)")
-  execute_command_on_machine "cd $COMPOSE_LOCATION && docker-compose pull && docker-compose up -d"
+  execute_command_on_machine "cd $COMPOSE_LOCATION && docker compose pull && docker compose up -d"
   messages+=("$(echo_message "Updated Docker Compose Successfully" false)")
 }
 

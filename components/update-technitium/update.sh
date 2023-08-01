@@ -31,11 +31,7 @@ end_script() {
 execute_command_on_container() {
   local command="$1"
 
-  pct_exec_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "pct exec $VM_CT_ID -- bash -s" <<EOF
-$command
-EOF
-  )
-  
+  pct_exec_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "pct exec $VM_CT_ID -- bash -c '$command' 2>&1")
   local exit_status=$?
 
   if [[ $exit_status -ne 0 ]]; then
@@ -55,13 +51,17 @@ update() {
 
   messages+=("$(echo_message "Updating Technitium" false)")
 
-  if ! execute_command_on_container "dpkg -s aspnetcore-runtime-7.0 > /dev/null 2>&1"; then
-    execute_command_on_container "wget -q https://packages.microsoft.com/config/debian/11/packages-microsoft-prod.deb"
-    execute_command_on_container "dpkg -i packages-microsoft-prod.deb &>/dev/null"
-    execute_command_on_container "apt-get update &>/dev/null"
-    execute_command_on_container "apt-get install -y aspnetcore-runtime-7.0 &>/dev/null"
-    execute_command_on_container "rm packages-microsoft-prod.deb"
+  check_output=$(execute_command_on_container "dpkg -s aspnetcore-runtime-7.0 > /dev/null 2>&1; echo \$?")
+  if [[ $check_output -ne 0 ]]; then
+    messages+=("$(echo_message "Package aspnetcore-runtime-7.0 Not Installed!" true)")
+    end_script 1
   fi
+
+  execute_command_on_container "wget -q https://packages.microsoft.com/config/debian/11/packages-microsoft-prod.deb"
+  execute_command_on_container "dpkg -i packages-microsoft-prod.deb &>/dev/null"
+  execute_command_on_container "apt-get update &>/dev/null"
+  execute_command_on_container "apt-get install -y aspnetcore-runtime-7.0 &>/dev/null"
+  execute_command_on_container "rm packages-microsoft-prod.deb"
 
   execute_command_on_container "bash <(curl -fsSL https://download.technitium.com/dns/install.sh) &>/dev/null"
 

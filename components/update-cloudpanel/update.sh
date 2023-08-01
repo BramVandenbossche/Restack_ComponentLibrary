@@ -39,20 +39,15 @@ execute_command_on_container() {
     messages+=("$(echo_message "Error executing command on container ($exit_status): $command" true)")
     end_script 1
   else
+    # Remove color codes from the output using sed
+    pct_exec_output=$(echo "$pct_exec_output" | sed -r "s/\x1B\[[0-9;]*[a-zA-Z]//g")
     echo "$pct_exec_output"
   fi
 }
 
 update() {
   messages+=("$(echo_message "Updating Cloudpanel" false)")
-
-  # Use stty to disable echo
-  stty -echo
-  pct_exec_output=$(execute_command_on_container "clp-update")
-  stty echo
-
-  echo "$pct_exec_output"
-
+  execute_command_on_container "clp-update"
   messages+=("$(echo_message "Updated Successfully" false)")
 }
 

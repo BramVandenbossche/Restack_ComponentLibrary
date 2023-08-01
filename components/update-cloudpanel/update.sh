@@ -32,7 +32,7 @@ end_script() {
 execute_command_on_container() {
   local command="$1"
 
-  pct_exec_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "pct exec $VM_CT_ID -- bash -c '$command' 2>&1 | sed 's,\x1B\[[0-9;]*[a-zA-Z],,g'")
+  pct_exec_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "pct exec $VM_CT_ID -- bash -c '$command' 2>&1")
   local exit_status=$?
 
   if [[ $exit_status -ne 0 ]]; then
@@ -45,7 +45,14 @@ execute_command_on_container() {
 
 update() {
   messages+=("$(echo_message "Updating Cloudpanel" false)")
-  execute_command_on_container "clp-update"
+
+  # Use stty to disable echo
+  stty -echo
+  pct_exec_output=$(execute_command_on_container "clp-update")
+  stty echo
+
+  echo "$pct_exec_output"
+
   messages+=("$(echo_message "Updated Successfully" false)")
 }
 

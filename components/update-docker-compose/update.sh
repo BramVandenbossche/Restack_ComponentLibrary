@@ -34,9 +34,9 @@ execute_command_on_machine() {
   local command="$1"
 
   if [[ $VM_CT_ID == "0" || $VM_CT_ID -eq 0 ]]; then
-    output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "bash -c '$command' 2>&1")
+    output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$HOST" "bash -c '$command' 2>&1")
   else
-    output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "pct exec $VM_CT_ID -- bash -c \"$command\" 2>&1")
+    output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$HOST" "pct exec $VM_CT_ID -- bash -c \"$command\" 2>&1")
   fi
 
   local exit_status=$?

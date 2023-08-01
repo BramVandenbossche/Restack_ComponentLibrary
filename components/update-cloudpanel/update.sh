@@ -39,9 +39,12 @@ execute_command_on_container() {
     messages+=("$(echo_message "Error executing command on container ($exit_status): $command" true)")
     end_script 1
   else
-    echo_message "$pct_exec_output"
+    # Remove color codes and unwanted characters using sed
+    pct_exec_output=$(echo "$pct_exec_output" | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | tr -cd '[:print:]')
+    messages+=("$(echo_message "$pct_exec_output" false)")
   fi
 }
+
 
 update() {
   messages+=("$(echo_message "Updating Cloudpanel" false)")

@@ -4,16 +4,20 @@
     "type": "shell",
     "parameters":[
         {
-            "name": "Docker Compose location",
+            "name": "VM container id",
             "datatype": "number"
+        },
+        {
+            "name": "Host",
+            "datatype": "text"
         },
         {
             "name": "User",
             "datatype": "text"
         },
         {
-            "name": "SSH key",
-            "datatype": "text"
+            "name": "Docker Compose location",
+            "datatype": "number"
         },
         {
             "name": "SSH key",

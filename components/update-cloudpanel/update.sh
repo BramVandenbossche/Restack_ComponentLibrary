@@ -39,8 +39,8 @@ execute_command_on_container() {
     messages+=("$(echo_message "Error executing command on container ($exit_status): $command" true)")
     end_script 1
   else
-    # Remove color codes and unwanted characters from the output using echo and grep
-    pct_exec_output=$(echo -e "$pct_exec_output" | grep -o '[[:print:]]*')
+    # Remove color codes and unwanted characters using sed
+    pct_exec_output=$(echo "$pct_exec_output" | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | tr -cd '[:print:]')
     echo "$pct_exec_output"
   fi
 }

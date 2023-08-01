@@ -13,7 +13,7 @@ messages=()
 echo_message() {
   local message="$1"
   local error="$2"
-  local componentname="kubernetes-update"
+  local componentname="docker-compose-update"
   local timestamp=$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")
 
   echo '{"timestamp": "'"$timestamp"'","componentName": "'"$componentname"'","message": "'"$message"'","error": '$error'}'

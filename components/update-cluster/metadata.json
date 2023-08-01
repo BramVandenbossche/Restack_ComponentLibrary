@@ -20,6 +20,10 @@
             "datatype": "text"
         },
         {
+            "name": "Update Command",
+            "datatype": "text"
+        },
+        {
             "name": "SSH key",
             "datatype": "text"
         }

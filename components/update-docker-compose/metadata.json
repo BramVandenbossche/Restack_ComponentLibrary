@@ -1,0 +1,23 @@
+{
+    "name": "Update Docker Compose",
+    "file": "update.sh",
+    "type": "shell",
+    "parameters":[
+        {
+            "name": "Docker Compose location",
+            "datatype": "number"
+        },
+        {
+            "name": "User",
+            "datatype": "text"
+        },
+        {
+            "name": "SSH key",
+            "datatype": "text"
+        },
+        {
+            "name": "SSH key",
+            "datatype": "text"
+        }
+    ]
+}

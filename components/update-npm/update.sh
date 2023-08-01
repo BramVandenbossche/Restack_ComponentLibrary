@@ -43,7 +43,7 @@ EOF
     messages+=("$(echo_message "Error executing command on container ($exit_status): $command" true)")
     end_script 1
   else
-    messages+=("$(echo_message  "$pct_exec_output" true)")
+    messages+=("$(echo_message  "$pct_exec_output" false)")
   fi
 }
 

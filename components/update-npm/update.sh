@@ -32,7 +32,11 @@ end_script() {
 execute_command_on_container() {
   local command="$1"
 
-  pct_exec_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "pct exec $VM_CT_ID -- bash -c '$command' 2>&1")
+  pct_exec_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "pct exec $VM_CT_ID -- bash -s" <<EOF
+$command
+EOF
+  )
+  
   local exit_status=$?
 
   if [[ $exit_status -ne 0 ]]; then
@@ -50,7 +54,7 @@ update() {
     end_script 1
   fi
 
-  RELEASE=$(curl -s https://api.github.com/repos/NginxProxyManager/nginx-proxy-manager/releases/latest | grep "tag_name" | awk '{print substr($2, 3, length($2)-4)}')
+  RELEASE=$(execute_command_on_container "curl -s https://api.github.com/repos/NginxProxyManager/nginx-proxy-manager/releases/latest | grep 'tag_name' | awk '{print substr(\$2, 3, length(\$2)-4)}'")
 
   messages+=("$(echo_message "Stopping Services" false)")
   execute_command_on_container "sudo systemctl stop openresty"

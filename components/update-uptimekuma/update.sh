@@ -39,7 +39,7 @@ execute_command_on_container() {
     messages+=("$(echo_message "Error executing command on container ($exit_status): $command" true)")
     end_script 1
   else
-    echo "$pct_exec_output"
+    messages+=("$(echo_message "$pct_exec_output" true)")
   fi
 }
 
@@ -72,7 +72,6 @@ update() {
   messages+=("$(echo_message "Started" false)")
   messages+=("$(echo_message "Updated Successfully" false)")
 }
-
 
 ## Run
 update

@@ -39,9 +39,12 @@ execute_command_on_container() {
     messages+=("$(echo_message "Error executing command on container ($exit_status): $command" true)")
     end_script 1
   else
-    messages+=("$(echo_message "$pct_exec_output" false)")
+    while IFS= read -r line; do
+      messages+=("$(echo_message "$line" false)")
+    done <<< "$pct_exec_output"
   fi
 }
+
 
 update() {
   check_output=$(execute_command_on_container "[ -d /opt/AdGuardHome ] && echo 'Installed' || echo 'NotInstalled'")

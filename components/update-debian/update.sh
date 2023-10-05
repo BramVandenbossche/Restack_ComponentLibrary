@@ -43,9 +43,12 @@ execute_command_on_machine() {
     messages+=("$(echo_message "Error executing command on machine ($exit_status): $command" true)")
     end_script 1
   else
-    messages+=("$(echo_message "$output" false)")
+    while IFS= read -r line; do
+      messages+=("$(echo_message "$line" false)")
+    done <<< "$output"
   fi
 }
+
 
 
 update() {
